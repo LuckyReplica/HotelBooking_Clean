@@ -25,14 +25,13 @@ namespace HotelBooking.UnitTests
         private Mock<IBookingManager> mockBookingManager;
 
         private IBookingManager fakeBookingManager;
-        private BookingsController controller;
 
         public BookingManagerTests()
         {
             start = DateTime.Today.AddDays(TenDays);
             end = DateTime.Today.AddDays(TwentyDays);
 
-            var bookingList = new Booking[] { new Booking() { StartDate = start, EndDate = end } };
+            var bookingList = new Booking[] { new Booking() { StartDate = start, EndDate = end, RoomId = 1, CustomerId = 1, IsActive = true, Id = 1 } };
             var roomsList = new Room[] { new Room() { Description = "1", Id = 1 }, new Room() { Description = "2", Id = 2 } };
 
             mockBookingRepository = new Mock<IRepository<Booking>>();
@@ -43,18 +42,15 @@ namespace HotelBooking.UnitTests
             mockRoomRepository.Setup(x => x.GetAll()).Returns(() => roomsList);
 
             mockBookingRepository.Setup(x => x.GetAll()).Returns(() => bookingList);
-            mockBookingManager.Setup(x => x.FindAvailableRoom(start, end)).Returns(() => 1);
+            //mockBookingManager.Setup(x => x.FindAvailableRoom(start, end)).Returns(() => 1);
 
-            controller = new BookingsController(mockBookingRepository.Object, mockRoomRepository.Object, mockCustomerRepository.Object, mockBookingManager.Object);
-            fakeBookingManager = mockBookingManager.Object;
+            fakeBookingManager = new BookingManager(mockBookingRepository.Object, mockRoomRepository.Object);
 
 
 
             IRepository<Booking> bookingRepository = new FakeBookingRepository(start, end);
             IRepository<Room> roomRepository = new FakeRoomRepository();
             bookingManager = new BookingManager(bookingRepository, roomRepository);
-
-
 
         }
 
@@ -85,7 +81,7 @@ namespace HotelBooking.UnitTests
 
             object[] case_IsOccupied = { start, end, true };
             object[] case_IsNotOccupied = { start.AddDays(-3), start.AddDays(-2), false };
-            object[] case_IsNotFullyOccupied = { start.AddDays(-3), end, false };
+            object[] case_IsNotFullyOccupied = { start.AddDays(-3), end, true };
 
             list.Add(case_IsOccupied);
             list.Add(case_IsNotOccupied);
@@ -97,30 +93,30 @@ namespace HotelBooking.UnitTests
         #region "Moq tests"
 
         [Fact]
-        public void GetAllBookings_ReturnsOneBooking()
-        {
-            //ARRANGE
-            //ACT
-            var bookings = controller.Get();
-
-            //ASSERT
-            Assert.Single(bookings);
-        }
-
-        [Fact]
-        public void GetAllAvailableRoomForPeriod_ReturnsARoomNo()
+        public void GetAvailableRoomForPeriod_ReturnRoomNoTwo()
         {
             //ARRANGE
             //ACT
             var roomNo = fakeBookingManager.FindAvailableRoom(start, end);
 
             //ASSERT
-            Assert.Equal(1, roomNo);
+            Assert.Equal(2, roomNo);
+        }
+
+        [Fact]
+        public void GetAllAvailableRoomForPeriod_ReturnARoomNo()
+        {
+            //ARRANGE
+            //ACT
+            var roomNo = fakeBookingManager.FindAvailableRoom(start.AddDays(-3), start.AddDays(-2));
+
+            //ASSERT
+            Assert.True(roomNo>0);
         }
 
         #endregion
 
-
+        #region "Original tests"
         [Fact]
         public void FindAvailableRoom_StartDateNotInTheFuture_ThrowsArgumentException()
         {
@@ -138,7 +134,7 @@ namespace HotelBooking.UnitTests
             // Assert
             Assert.NotEqual(-1, roomId);
         }
-
+        #endregion
 
         #region "Data-driven tests"
 
@@ -147,13 +143,11 @@ namespace HotelBooking.UnitTests
         public void GetFullyOccupiedDates_DoesExist_Success(DateTime startDate, DateTime endDate, bool expectedResult)
         {
             //ARRANGE
-            bool isNotNull = false;
-
             //ACT
-            isNotNull = this.bookingManager.GetFullyOccupiedDates(startDate, endDate) != null;
+            var listDates = this.bookingManager.GetFullyOccupiedDates(startDate, endDate);
 
             //ASSERT
-            Assert.Equal(expectedResult, isNotNull);
+            Assert.Equal(expectedResult, listDates.Count()>0);
         }
 
 
