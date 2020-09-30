@@ -31,7 +31,7 @@ namespace HotelBooking.UnitTests
             start = DateTime.Today.AddDays(TenDays);
             end = DateTime.Today.AddDays(TwentyDays);
 
-            var bookingList = new Booking[] { new Booking() { StartDate = start, EndDate = end, RoomId = 1, CustomerId = 1, IsActive = true, Id = 1 } };
+            var bookingList = new Booking[] { new Booking() { StartDate = start.AddDays(-1), EndDate = end, RoomId = 1, CustomerId = 1, IsActive = true, Id = 1 }, new Booking() { StartDate = start, EndDate = end, RoomId = 2, CustomerId = 2, IsActive = true, Id = 2 } };
             var roomsList = new Room[] { new Room() { Description = "1", Id = 1 }, new Room() { Description = "2", Id = 2 } };
 
             mockBookingRepository = new Mock<IRepository<Booking>>();
@@ -42,7 +42,6 @@ namespace HotelBooking.UnitTests
             mockRoomRepository.Setup(x => x.GetAll()).Returns(() => roomsList);
 
             mockBookingRepository.Setup(x => x.GetAll()).Returns(() => bookingList);
-            //mockBookingManager.Setup(x => x.FindAvailableRoom(start, end)).Returns(() => 1);
 
             fakeBookingManager = new BookingManager(mockBookingRepository.Object, mockRoomRepository.Object);
 
@@ -116,7 +115,7 @@ namespace HotelBooking.UnitTests
         {
             //ARRANGE
             //ACT
-            var roomNo = fakeBookingManager.FindAvailableRoom(start, end);
+            var roomNo = fakeBookingManager.FindAvailableRoom(start.AddDays(-3), start.AddDays(-1));
 
             //ASSERT
             Assert.Equal(2, roomNo);
@@ -133,16 +132,17 @@ namespace HotelBooking.UnitTests
             Assert.True(roomNo>0);
         }
 
-        [Fact]
-        public void CreateBooking_NonOccupiedDate_Succeed()
+        [Theory]
+        [MemberData(nameof(CreateBooking_TestCases))]
+        public void CreateBooking_IsPossibleMoq_Succeed(DateTime start, DateTime end, int roomID, int customerId, bool expectedResult)
         {
             //ARRANGE
-            Booking booking = new Booking() { CustomerId = 1, StartDate = start.AddDays(-2), EndDate = start.AddDays(-1), RoomId = 1, Id=2 };
+            Booking booking = new Booking() { CustomerId = customerId, StartDate = start, EndDate =end, RoomId = roomID, Id=2 };
 
             //ACT
             var result = fakeBookingManager.CreateBooking(booking);
 
-            Assert.True(result);
+            Assert.Equal(expectedResult, result);
         }
 
         #endregion
