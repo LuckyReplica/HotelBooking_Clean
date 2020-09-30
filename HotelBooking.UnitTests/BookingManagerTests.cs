@@ -47,11 +47,30 @@ namespace HotelBooking.UnitTests
             fakeBookingManager = new BookingManager(mockBookingRepository.Object, mockRoomRepository.Object);
 
 
-
+            //Dates are fully occupied in the FakeBookingRepository
             IRepository<Booking> bookingRepository = new FakeBookingRepository(start, end);
             IRepository<Room> roomRepository = new FakeRoomRepository();
             bookingManager = new BookingManager(bookingRepository, roomRepository);
 
+        }
+
+        public static IEnumerable<object[]> CreateBooking_TestCases()
+        {
+            DateTime start = DateTime.Today.AddDays(TenDays);
+            DateTime end = DateTime.Today.AddDays(TwentyDays);
+
+            var list = new List<object[]>();
+
+            object[] case_CreateBookingInOccupiedTime_Fail = {start, end, 1, 1, false };
+            object[] case_CreateBookingInAvailableTime_Succeed = { start.AddDays(-2), start.AddDays(-1), 1, 1, true };
+            object[] case_CreateBookingInAvailableRoom_Succeed = { start.AddDays(-2), end.AddDays(2), 1, 1, false };
+
+            list.Add(case_CreateBookingInOccupiedTime_Fail);
+            list.Add(case_CreateBookingInAvailableTime_Succeed);
+            list.Add(case_CreateBookingInAvailableRoom_Succeed);
+
+
+            return list;
         }
 
         public static IEnumerable<object[]> FindAvailableRoom_TestCases()
@@ -104,7 +123,7 @@ namespace HotelBooking.UnitTests
         }
 
         [Fact]
-        public void GetAllAvailableRoomForPeriod_ReturnARoomNo()
+        public void GetAvailableRoomForPeriod_ReturnARoomNo()
         {
             //ARRANGE
             //ACT
@@ -112,6 +131,18 @@ namespace HotelBooking.UnitTests
 
             //ASSERT
             Assert.True(roomNo>0);
+        }
+
+        [Fact]
+        public void CreateBooking_NonOccupiedDate_Succeed()
+        {
+            //ARRANGE
+            Booking booking = new Booking() { CustomerId = 1, StartDate = start.AddDays(-2), EndDate = start.AddDays(-1), RoomId = 1, Id=2 };
+
+            //ACT
+            var result = fakeBookingManager.CreateBooking(booking);
+
+            Assert.True(result);
         }
 
         #endregion
@@ -161,6 +192,20 @@ namespace HotelBooking.UnitTests
 
             //ASSERT
             Assert.Equal(expectedResult, roomNo > 0);
+        }
+
+        [Theory]
+        [MemberData(nameof(CreateBooking_TestCases))]
+        public void CreateBooking_IsPossible_Success(DateTime start, DateTime end, int roomId, int customerId, bool expectedResult)
+        {
+            //ARRANGE
+            var booking = new Booking { StartDate = start, EndDate = end, CustomerId = customerId, Id = 2, RoomId = roomId };
+
+            //ACT
+            bool result = this.bookingManager.CreateBooking(booking);
+
+            //ASSERT
+            Assert.Equal(expectedResult, result);
         }
 
         #endregion
