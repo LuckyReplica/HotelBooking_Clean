@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
-namespace HotelBooking.UnitTests
+namespace HotelBooking.SpecflowTests
 {
     public class RoomsControllerTests
     {

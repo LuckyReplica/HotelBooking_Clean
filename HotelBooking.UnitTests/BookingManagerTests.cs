@@ -3,13 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HotelBooking.Core;
-using HotelBooking.UnitTests.Fakes;
+using HotelBooking.SpecflowTests.Fakes;
 using HotelBooking.WebApi.Controllers;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
 
-namespace HotelBooking.UnitTests
+namespace HotelBooking.SpecflowTests
 {
     public class BookingManagerTests
     {
@@ -59,7 +59,6 @@ namespace HotelBooking.UnitTests
             DateTime end = DateTime.Today.AddDays(TwentyDays);
 
             var list = new List<object[]>();
-
             object[] case_CreateBookingInOccupiedTime_Fail = {start, end, 1, 1, false };
             object[] case_CreateBookingInAvailableTime_Succeed = { start.AddDays(-2), start.AddDays(-1), 1, 1, true };
             object[] case_CreateBookingInAvailableRoom_Succeed = { start.AddDays(-2), end.AddDays(2), 1, 1, false };
@@ -95,8 +94,8 @@ namespace HotelBooking.UnitTests
         {
             DateTime start = DateTime.Today.AddDays(TenDays);
             DateTime end = DateTime.Today.AddDays(TwentyDays);
-            var list = new List<object[]>();
 
+            var list = new List<object[]>();
             object[] case_IsOccupied = { start, end, true };
             object[] case_IsNotOccupied = { start.AddDays(-3), start.AddDays(-2), false };
             object[] case_IsNotFullyOccupied = { start.AddDays(-3), end, true };
@@ -129,7 +128,7 @@ namespace HotelBooking.UnitTests
             var roomNo = fakeBookingManager.FindAvailableRoom(start.AddDays(-3), start.AddDays(-2));
 
             //ASSERT
-            Assert.True(roomNo>0);
+            Assert.True(roomNo > 0);
         }
 
         [Theory]
@@ -209,11 +208,5 @@ namespace HotelBooking.UnitTests
         }
 
         #endregion
-
-
-
-
-
-
     }
 }
