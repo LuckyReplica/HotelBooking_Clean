@@ -1,4 +1,10 @@
 ﻿Feature: HotelBooking
+
+Scenario: start date after, and > end date, end date after
+	Given start date after, and > end date
+	And end date after occupied time
+	When creating a booking
+	Then the booking should not be created
 	
 Scenario: Start date before, end date before
 	Given start date before occupied time

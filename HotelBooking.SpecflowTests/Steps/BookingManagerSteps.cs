@@ -108,5 +108,12 @@ namespace HotelBooking.SpecflowTests.Steps
         {
             end = DateTime.Today.AddDays(TwentyDays);
         }
+
+        [Given(@"start date after, and > end date")]
+        public void GivenStartDateAfterAndEndDate()
+        {
+            start = DateTime.Today.AddDays(TenDays + 4);
+        }
+
     }
 }
