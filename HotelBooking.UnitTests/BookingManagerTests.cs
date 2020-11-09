@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HotelBooking.Core;
 using HotelBooking.SpecflowTests.Fakes;
@@ -142,6 +143,30 @@ namespace HotelBooking.SpecflowTests
             var result = fakeBookingManager.CreateBooking(booking);
 
             Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void CreateBooking_StartDateLargerThanEndDate_ThrowException()
+        {
+            //ARRANGE
+            var startDate = DateTime.Now.AddDays(TwentyDays + 5);
+            Booking booking = new Booking() { CustomerId = 1, StartDate = startDate, EndDate = startDate.AddDays(-2), RoomId = 1, Id = 2 };
+
+            //ACT
+            //ASSERT
+            Assert.Throws<ArgumentException>(() => fakeBookingManager.CreateBooking(booking));
+        }
+
+        [Fact]
+        public void CreateBooking_StartLessThanToday_ThrowException()
+        {
+            //ARRANGE
+            var startDate = DateTime.Now.AddDays(-2);
+            Booking booking = new Booking() { CustomerId = 1, StartDate = startDate, EndDate = startDate.AddDays(+5), RoomId = 1, Id = 2 };
+
+            //ACT
+            //ASSERT
+            Assert.Throws<ArgumentException>(() => fakeBookingManager.CreateBooking(booking));
         }
 
         #endregion
